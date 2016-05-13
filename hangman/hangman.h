@@ -7,43 +7,51 @@ using namespace std;
 class Hangman
 {
 public:
-	Hangman(const string fw, const int sof_er=7) //fw - file words
+	Hangman(const string fw) //fw - file words
 	{
 		_in_file.open(fw, ios::in);
-		_sof_er = sof_er;
+		_sof_er = 7;
 		if (!_in_file)
 		{
-			throw "Error open file";
+			throw "Error: open file fail";
 		}
 	}
 	void start()
 	{
 
-		string realstr, mask, enter_sybol;
-		
+		string realword, mask, enter_sybol;
 		char c;
 		while (!_in_file.eof())
 		{
-			getline(_in_file, realstr);
+
+			getline(_in_file, realword);
 			++_sof_str;
 
 		}
+		_in_file.close();
+		_in_file.open("words", ios::in);
+		
 		while (true)
 		{
-			realstr = get_random_string();
-			for (int i = 0; i < realstr.size(); ++i) //Заполнение строки для отгадываемого слова точками для дальнейшего заполнения отгадавшими буквами
+			_sof_e_er = 0;
+			realword.erase();
+			mask.erase();
+			enter_sybol.erase();
+			realword = get_random_word();
+			for (unsigned int i = 0; i < realword.size(); ++i) //Заполнение строки для отгадываемого слова точками для дальнейшего заполнения отгадавшими буквами
 			{
 				mask.insert(i, ".");
 			}
 			while (true)
 			{
-				cout << "guess: ";
+				cout << "Guesses: " << enter_sybol << "word: " << mask << " error: " << _sof_e_er << "/" << _sof_er << endl;
+				cout << "Guess: ";
 				for (bool exit = true; true;)
 				{
 					while (true)
 					{
 						cin >> c;
-						if (cin.fail || c<'a' || c>'z')
+						if (cin.fail() || c<'a' || c>'z')
 						{
 							cin.sync();
 							cin.clear();
@@ -55,7 +63,7 @@ public:
 							break;
 						}
 					}
-					for (int i = 0; i < realstr.size(); ++i)
+					for (int i = 0; i < realword.size(); ++i)
 					{
 						if (enter_sybol[i] == c)
 						{
@@ -70,9 +78,9 @@ public:
 						break;
 					}
 				}
-				for (int i = 0; i < realstr.size(); ++i)
+				for (int i = 0; i < realword.size(); ++i)
 				{
-					if (realstr[i] == c)
+					if (realword[i] == c)
 					{
 						mask[i] = c;
 					}
@@ -82,14 +90,14 @@ public:
 					}
 					
 				}
-				cout << "Guess: word: " << mask << "Errors: " << _sof_e_er << "/" << _sof_er << endl;
+				//cout << "Guess: word: " << mask << "Errors: " << _sof_e_er << "/" << _sof_er << endl;
 				if (_sof_er - _sof_e_er == 0)
 				{
-					cout << "The answer was\"" << realstr <<"\" you blew it";
+					cout << "The answer was\"" << realword <<"\" you blew it";
 				}
-				else if(mask==realstr)
+				else if(mask==realword)
 				{
-					c
+					cout << "You win, the word is \"" << realword << "\"\n";
 				}
 				
 			}
@@ -97,13 +105,19 @@ public:
 	}
 	
 
-	string get_random_string()
+	string get_random_word()
 	{
 		string result;
 		int num_string;
 		srand(time(0));
 		num_string = rand() % _sof_str;
 
+		//_in_file.open("words", ios::in);
+		//fstream ss("words", ios::in);
+		if(!_in_file)
+		{
+			cout << "kkkkkk";
+		}
 		for (int i = 0; i < num_string; ++i)
 		{
 			getline(_in_file, result);
