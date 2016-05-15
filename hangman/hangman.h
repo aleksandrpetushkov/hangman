@@ -13,15 +13,15 @@ public:
 		_sof_er = 7;
 		if (!_in_file)
 		{
-			throw "Error: open file fail";
+			throw "Error: open file fail"; // выбрасывание эксепшена ошибки открытия файла
 		}
 	}
 	void start()
 	{
 
-		string realword, mask, enter_sybol;
+		string realword, mask, enter_sybol;// реально слово, маска под угадываемое слово, строка введенных букв
 		char c;
-		while (!_in_file.eof())
+		while (!_in_file.eof()) //подсчет количества слов в файле 
 		{
 
 			getline(_in_file, realword);
@@ -29,75 +29,87 @@ public:
 
 		}
 		_in_file.close();
-		_in_file.open("words", ios::in);
 		
-		while (true)
+		while (true) //цикл игр
 		{
-			_sof_e_er = 0;
-			realword.erase();
-			mask.erase();
-			enter_sybol.erase();
-			realword = get_random_word();
-			for (unsigned int i = 0; i < realword.size(); ++i) //Заполнение строки для отгадываемого слова точками для дальнейшего заполнения отгадавшими буквами
+			bool error_yes = true; // флаг была ли ошибка
+			_sof_e_er = 0; // Количество допущенных ошибок
+			realword.erase(); //Очистка слова
+			mask.erase(); //очистка маски для слов
+			enter_sybol.erase();//Очистка введеных букв
+			realword = get_random_word(); //получение случайного слова из файла
+			for (unsigned int i = 0; i < realword.size(); ++i) //Заполнение строки для отгадываемого слова точками для дальнейшего заполнения отгадавшими буквами 
 			{
 				mask.insert(i, ".");
 			}
-			while (true)
+			while (true) //Цикл отгадывания слова
 			{
-				cout << "Guesses: " << enter_sybol << "word: " << mask << " error: " << _sof_e_er << "/" << _sof_er << endl;
+				cout << "Guesses: " << "\"" << enter_sybol << "\"" << " word: " << mask << " error: " << _sof_e_er << "/" << _sof_er << endl;
+				//cout << "realword: " << realword << endl; //вывод реального слова (для отладки)
 				cout << "Guess: ";
-				for (bool exit = true; true;)
+
+				for (bool exit = true; true;) //цикл ввода буквы
 				{
+					exit = true; //флаг выхода из цикла
+					error_yes = true; //флаг допуска ошибки
 					while (true)
 					{
 						cin >> c;
-						if (cin.fail() || c<'a' || c>'z')
+						if (cin.fail() || c<'a' || c>'z') //проверка на корректность ввода
 						{
-							cin.sync();
+							cin.sync(); 
 							cin.clear();
 							cin.ignore(cin.rdbuf()->in_avail());
 							cerr << "Error: incorrect enter, reenter: ";
 						}
-						else
+						else // если ввод корректен, очищается входной поток (на случай ввода больше одной буквы) и происходит выход из цикла ввода
 						{
+							cin.ignore(cin.rdbuf()->in_avail());
 							break;
 						}
 					}
-					for (int i = 0; i < realword.size(); ++i)
+					for (int i = 0; i < enter_sybol.size(); ++i) //Цикл проверки не была ли введена введенная буква ранее 
 					{
-						if (enter_sybol[i] == c)
+						if (enter_sybol[i] == c) // если буква введена ранее, вывод информации и ввод буквы по новой 
 						{
-							cout << "You guessed that: " << enter_sybol << endl;
-							exit = false;
+							cout << "You guessed that: \"" << enter_sybol <<"\". Reenter: ";
+							exit = false; //выставление флага о том что буква была введена ранее и происходит следующий ввод буквы
 							break;
 						}
 					}
-					if(exit)
+					if(exit) //Если буква не была введена, добавляется в список введены букв и происходит выход из цикла ввода
 					{
 						enter_sybol += c;
 						break;
 					}
+					
 				}
-				for (int i = 0; i < realword.size(); ++i)
+				for (int i = 0; i < realword.size(); ++i) // Цикл проверки присутствия введенной буквы в слове
 				{
-					if (realword[i] == c)
+					if (realword[i] == c) //если буква присутствует в слове, то происходит запись в маску
 					{
 						mask[i] = c;
-					}
-					else
-					{
-						++_sof_e_er;
+						error_yes = false; // выставляется флаг что ошибки нет, буква угадана
 					}
 					
 				}
-				//cout << "Guess: word: " << mask << "Errors: " << _sof_e_er << "/" << _sof_er << endl;
-				if (_sof_er - _sof_e_er == 0)
+				if (error_yes) //если ошибка присутствует, инкрустируется счетчик ошибок
 				{
-					cout << "The answer was\"" << realword <<"\" you blew it";
+					++_sof_e_er;
 				}
-				else if(mask==realword)
+				if (_sof_er - _sof_e_er == 0) //если количество допущенных ошибок равно количеству возможных - игра проиграна.
+				{
+					cout << "The answer was \"" << realword <<"\" you blew it.\n";
+					cout << "Try again.\n";
+					break;
+
+
+				}
+				else if(mask==realword) // если маска и угадываемое слово раны - игра выиграна
 				{
 					cout << "You win, the word is \"" << realword << "\"\n";
+					cout << "Try again.\n";
+					break;
 				}
 				
 			}
@@ -105,28 +117,19 @@ public:
 	}
 	
 
-	string get_random_word()
+	string get_random_word() //метод получения рандомного слова из файла
 	{
+		_in_file.open("words", ios::in);
 		string result;
 		int num_string;
 		srand(time(0));
-		num_string = rand() % _sof_str;
-
-		//_in_file.open("words", ios::in);
-		//fstream ss("words", ios::in);
-		if(!_in_file)
-		{
-			cout << "kkkkkk";
-		}
+		num_string = rand() % _sof_str; //генерация рандомного числа от нудя до размера количества строк
 		for (int i = 0; i < num_string; ++i)
 		{
 			getline(_in_file, result);
 		}
+		_in_file.close();
 		return result;
-	}
-	int get_sof_er()
-	{
-		return _sof_er;
 	}
 
 protected:
