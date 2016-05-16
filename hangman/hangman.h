@@ -19,7 +19,7 @@ public:
 	void start()
 	{
 
-		string realword, mask, enter_sybol;// реально слово, маска под угадываемое слово, строка введенных букв
+		
 		char c;
 		while (!_in_file.eof()) //подсчет количества слов в файле 
 		{
@@ -30,14 +30,15 @@ public:
 		}
 		_in_file.close();
 		
-		while (true) //цикл игр
+		for (bool flg = true; flg;) //цикл игр
 		{
 			bool error_yes = true; // флаг была ли ошибка
 			_sof_e_er = 0; // Количество допущенных ошибок
 			realword.erase(); //Очистка слова
 			mask.erase(); //очистка маски для слов
 			enter_sybol.erase();//Очистка введеных букв
-			realword = get_random_word(); //получение случайного слова из файла
+
+			set_word(get_random_word()); //получение/установка случайного слова из файла
 			for (unsigned int i = 0; i < realword.size(); ++i) //Заполнение строки для отгадываемого слова точками для дальнейшего заполнения отгадавшими буквами 
 			{
 				mask.insert(i, ".");
@@ -99,27 +100,65 @@ public:
 				}
 				if (_sof_er - _sof_e_er == 0) //если количество допущенных ошибок равно количеству возможных - игра проиграна.
 				{
+					char fl;
 					cout << "The answer was \"" << realword <<"\" you blew it.\n";
-					cout << "Try again.\n";
-					break;
+					cout << "Enter \"y\" for try again.\n";
+					cin >> fl;
+					cin.sync();
+					cin.clear();
+					cin.ignore(cin.rdbuf()->in_avail());
+					if(fl=='y')
+					{
+
+						break;
+
+					}
+					else
+					{
+						flg = false;
+						break;
+					}
 
 
 				}
 				else if(mask==realword) // если маска и угадываемое слово раны - игра выиграна
 				{
+					char fl;
 					cout << "You win, the word is \"" << realword << "\"\n";
-					cout << "Try again.\n";
-					break;
+					cout << "Enter \"y\" for try again.\n";
+					cin >> fl;
+					cin.sync();
+					cin.clear();
+					cin.ignore(cin.rdbuf()->in_avail());
+					if (fl == 'y')
+					{
+
+						break;
+
+					}
+					else
+					{
+						flg = false;
+						break;
+					}
+
 				}
 				
 			}
 		}
 	}
-	
+	void set_word(string const &st)
+	{
+		realword = st;
+	}
 
 	string get_random_word() //метод получения рандомного слова из файла
 	{
 		_in_file.open("words", ios::in);
+		if(!_in_file)
+		{
+			throw "Error: open file fail"; // выбрасывание эксепшена ошибки открытия файла
+		}
 		string result;
 		int num_string;
 		srand(time(0));
@@ -133,6 +172,7 @@ public:
 	}
 
 protected:
+	string realword, mask, enter_sybol;// реально слово, маска под угадываемое слово, строка введенных букв
 	unsigned int _sof_str=0; //Количество строк в библиотеке слов
 	unsigned int _sof_e_er; //Совершенное количество ошибок
 	unsigned int _sof_er; //Допустимое количество ошибок

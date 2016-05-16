@@ -3,11 +3,22 @@
 #include <time.h>
 #include <string>
 #include "hangman.h"
+#include "gtest/gtest.h"
 
 using namespace std;
 
 
-int main()
+TEST()
+{
+	ASSERT_ANY_THROW(Hangman hg("kk"));
+	
+}
+
+
+
+
+
+int main(int argc, char* argv[])
 {
 	try
 	{
@@ -21,6 +32,8 @@ int main()
 
 
 	cout << "Pres any key";
+	::testing::InitGoogleTest(&argc, argv);
+	RUN_ALL_TESTS();
 	cin.get();
 	
 	return 0;
